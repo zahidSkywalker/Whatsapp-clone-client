@@ -1,55 +1,34 @@
-import Dexie, { type EntityTable } from 'dexie';
+import Dexie, { Table } from 'dexie';
 
-// Define types for our database entities
-interface DBMessage {
+export interface Message {
   id: string;
   chatId: string;
+  content: string;
   senderId: string;
-  type: 'text' | 'image' | 'voice' | 'file';
-  content?: string;
-  mediaUrl?: string;
-  fileName?: string;
-  fileSize?: number;
-  status: 'sent' | 'delivered' | 'read' | 'pending' | 'failed';
   createdAt: Date;
-  updatedAt: Date;
-  sender: {
-    id: string;
-    username: string;
-    avatar?: string;
-  };
+  status: 'sending' | 'sent' | 'failed';
 }
 
-interface DBChat {
-  id: string;
-  name?: string;
-  isGroup: boolean;
-  avatar?: string;
-  updatedAt: Date;
-}
-
-interface Outbox {
-  id?: number; // Auto-incremented ID for outbox queue
+export interface Outbox {
+  id?: number;
   tempId: string;
   chatId: string;
-  type: 'text' | 'image' | 'voice' | 'file';
-  content?: string;
-  file?: Blob; // Store file blob for offline upload
+  type: string;
+  content: string;
   createdAt: Date;
 }
 
-const db = new Dexie('WhatsAppDB') as Dexie & {
-  messages: EntityTable<DBMessage, 'id'>;
-  chats: EntityTable<DBChat, 'id'>;
-  outbox: EntityTable<Outbox, 'id'>;
-};
+export class MyDatabase extends Dexie {
+  messages!: Table<Message, string>;
+  outbox!: Table<Outbox, number>;
 
-// Schema definition
-db.version(1).stores({
-  messages: 'id, chatId, createdAt, status',
-  chats: 'id, updatedAt',
-  outbox: '++id, chatId, createdAt'
-});
+  constructor() {
+    super('whatsapp_clone_db');
+    this.version(1).stores({
+      messages: 'id, chatId, createdAt',
+      outbox: '++id, chatId'
+    });
+  }
+}
 
-export { db };
-export type { DBMessage, DBChat, Outbox };
+export const db = new MyDatabase();
