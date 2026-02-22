@@ -7,7 +7,7 @@ import Header from '../layout/Header';
 import ChatInput from './ChatInput';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
-import { ScrollArea } from '@/components/ui/scroll-area';
+// Removed unused import: import { ScrollArea } from '@/components/ui/scroll-area';
 import api from '@/lib/api';
 
 const ChatWindow: React.FC = () => {
@@ -16,10 +16,8 @@ const ChatWindow: React.FC = () => {
   const { joinChat } = useSocket();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Hook to mark messages as read
   useReadMessages();
 
-  // Fetch messages and join room when active chat changes
   useEffect(() => {
     const fetchMessages = async () => {
       if (activeChat) {
@@ -35,7 +33,6 @@ const ChatWindow: React.FC = () => {
     fetchMessages();
   }, [activeChat?.id]);
 
-  // Scroll to bottom on new message
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -66,7 +63,6 @@ const ChatWindow: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-screen bg-whatsapp-dark-bg">
       <Header />
-      {/* Chat Background */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto chat-bg">
         <div className="flex flex-col py-4 min-h-full justify-end">
           {messages.map((msg) => (
