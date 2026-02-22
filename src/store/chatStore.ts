@@ -7,20 +7,22 @@ interface ChatState {
   
   chats: Chat[];
   setChats: (chats: Chat[]) => void;
+  addChat: (chat: Chat) => void;
   
   messages: Message[];
   setMessages: (messages: Message[]) => void;
-  
-  // New action to append a single message
   addMessage: (message: Message) => void;
-  // New action to update the chat list (sidebar)
+  
   updateLatestMessage: (message: Message) => void;
+  
+  onlineUsers: string[];
+  setOnlineUsers: (users: string[]) => void;
   
   typingUsers: Record<string, boolean>;
   setTyping: (chatId: string, isTyping: boolean) => void;
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set) => ({
   activeChat: null,
   setActiveChat: (chat) => set({ 
     activeChat: chat, 
@@ -29,6 +31,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   
   chats: [],
   setChats: (chats) => set({ chats }),
+  
+  addChat: (chat) => set((state) => ({
+    chats: [chat, ...state.chats]
+  })),
   
   messages: [],
   setMessages: (messages) => set({ messages }),
@@ -44,16 +50,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const updatedChats = [...state.chats];
     const chat = { ...updatedChats[chatIndex] };
     
-    // Update the chat's last message info
-    // Assuming the Chat type has a 'messages' array for the last message preview
     chat.messages = [message];
     
-    // Move this chat to the top of the list
     updatedChats.splice(chatIndex, 1);
     updatedChats.unshift(chat);
     
     return { chats: updatedChats };
   }),
+
+  onlineUsers: [],
+  setOnlineUsers: (users) => set({ onlineUsers: users }),
 
   typingUsers: {},
   setTyping: (chatId, isTyping) => set((state) => ({
