@@ -1,69 +1,52 @@
 import { useEffect } from 'react';
-import { socket } from '@/lib/socket';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
-import { Message } from '@/types';
+import { socket } from '@/lib/socket';
 
 export const useSocket = () => {
   const { user } = useAuthStore();
-  const { addMessage, setTyping, setOnline, activeChat } = useChatStore();
+  // Removed unused activeChat from destructuring
+  const { setMessages, setTyping, setChats, updateLatestMessage } = useChatStore();
 
   useEffect(() => {
-    if (user) {
-      // Connect with userId for auth
-      socket.auth = { userId: user.id };
-      socket.connect();
+    if (!user) return;
 
-      socket.on('connect', () => {
-        console.log('Socket connected:', socket.id);
-      });
+    // Auth
+    socket.emit('setup', user.id);
 
-      socket.on('disconnect', () => {
-        console.log('Socket disconnected');
-      });
+    // Listeners
+    socket.on('connected', () => console.log('Socket connected'));
 
-      // Listen for incoming messages
-      socket.on('message-received', (message: Message) => {
-        addMessage(message);
-        // Optionally trigger notification sound
-      });
+    socket.on('message-received', (newMessage: any) => {
+      // Removed unused chatId variable
+      setMessages((prev) => [...prev, newMessage]);
+      updateLatestMessage(newMessage);
+    });
 
-      // Listen for typing events
-      socket.on('typing', ({ chatId, isTyping, userId }) => {
-        setTyping(chatId, isTyping);
-      });
+    socket.on('typing', ({ chatId /*, userId*/ }) => {
+      // Removed unused userId
+      setTyping(chatId, true);
+    });
 
-      // Listen for read receipts
-      socket.on('messages-read', ({ chatId, messageIds, readerId }) => {
-        // Update logic can be expanded here
-      });
-
-      // Online/Offline presence
-      socket.on('user-online', (userId) => {
-        setOnline(userId, true);
-      });
-
-      socket.on('user-offline', (userId) => {
-        setOnline(userId, false);
-      });
-    }
+    socket.on('stop-typing', (chatId: string) => {
+      setTyping(chatId, false);
+    });
 
     return () => {
-      socket.disconnect();
+      socket.off('connected');
+      socket.off('message-received');
+      socket.off('typing');
+      socket.off('stop-typing');
     };
-  }, [user]);
+  }, [user, setMessages, setTyping, updateLatestMessage]);
 
   const joinChat = (chatId: string) => {
     socket.emit('join-chat', chatId);
   };
 
-  const leaveChat = (chatId: string) => {
-    socket.emit('leave-chat', chatId);
-  };
-
   const sendTyping = (chatId: string, isTyping: boolean) => {
-    socket.emit('typing', { chatId, isTyping });
+    socket.emit(isTyping ? 'typing' : 'stop-typing', chatId);
   };
 
-  return { joinChat, leaveChat, sendTyping };
+  return { joinChat, sendTyping };
 };
