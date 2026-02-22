@@ -1,10 +1,8 @@
-import { db, Outbox } from './db';
+import { db } from './db'; // Removed unused Outbox import
 import api from './api';
 
-// Check if online
 const isOnline = () => navigator.onLine;
 
-// Add message to outbox queue
 export const queueMessage = async (messageData: any) => {
   try {
     await db.outbox.add({
@@ -20,7 +18,6 @@ export const queueMessage = async (messageData: any) => {
   }
 };
 
-// Process the outbox queue
 export const processOutbox = async () => {
   if (!isOnline()) return;
 
@@ -31,24 +28,20 @@ export const processOutbox = async () => {
 
   for (const msg of messages) {
     try {
-      // Send to server
       await api.post(`/message/${msg.chatId}`, {
         content: msg.content,
         type: msg.type,
       });
       
-      // Remove from outbox on success
       if (msg.id) {
         await db.outbox.delete(msg.id);
       }
     } catch (error) {
       console.error('Failed to send queued message:', error);
-      // Optionally keep in queue or discard after X attempts
     }
   }
 };
 
-// Initialize listeners
 export const initOfflineSupport = () => {
   window.addEventListener('online', () => {
     console.log('Back online. Processing outbox...');
