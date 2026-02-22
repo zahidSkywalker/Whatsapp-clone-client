@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-whatsapp-dark-bg text-whatsapp-dark-text font-sans antialiased;
+    overflow: hidden; /* Prevent scrollbars on body */
+  }
+}
+
+/* Scrollbar Styling - WhatsApp Style */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(134, 150, 160, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(134, 150, 160, 0.5);
+}
+
+/* Chat Background Pattern */
+.chat-bg {
+  background-color: #0b141a;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23182229' fill-opacity='0.6'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Dark Mode Container */
+.whatsapp-container {
+  @apply flex h-screen w-screen bg-whatsapp-dark-bg;
+}
+
+/* Light Mode Container */
+.whatsapp-container.light {
+  @apply bg-whatsapp-light-bg;
+}
+
+/* Input placeholder color */
+input::placeholder, textarea::placeholder {
+  @apply text-whatsapp-dark-textSecondary;
+}
+
+.light input::placeholder, .light textarea::placeholder {
+  @apply text-whatsapp-light-textSecondary;
+}
