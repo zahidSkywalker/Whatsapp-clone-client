@@ -2,72 +2,61 @@ import { create } from 'zustand';
 import { Chat, Message } from '@/types';
 
 interface ChatState {
-  chats: Chat[];
   activeChat: Chat | null;
-  messages: Message[];
-  typingUsers: { [chatId: string]: boolean };
-  onlineUsers: Set<string>;
-  
-  setChats: (chats: Chat[]) => void;
-  addChat: (chat: Chat) => void;
   setActiveChat: (chat: Chat | null) => void;
+  
+  chats: Chat[];
+  setChats: (chats: Chat[]) => void;
+  
+  messages: Message[];
   setMessages: (messages: Message[]) => void;
+  
+  // New action to append a single message
   addMessage: (message: Message) => void;
+  // New action to update the chat list (sidebar)
+  updateLatestMessage: (message: Message) => void;
+  
+  typingUsers: Record<string, boolean>;
   setTyping: (chatId: string, isTyping: boolean) => void;
-  setOnline: (userId: string, status: boolean) => void;
-  updateMessageStatus: (messageId: string, status: Message['status']) => void;
 }
 
-export const useChatStore = create<ChatState>((set) => ({
-  chats: [],
+export const useChatStore = create<ChatState>((set, get) => ({
   activeChat: null,
-  messages: [],
-  typingUsers: {},
-  onlineUsers: new Set(),
-
+  setActiveChat: (chat) => set({ 
+    activeChat: chat, 
+    messages: chat?.messages || [] 
+  }),
+  
+  chats: [],
   setChats: (chats) => set({ chats }),
   
-  addChat: (chat) => set((state) => ({
-    chats: [chat, ...state.chats]
+  messages: [],
+  setMessages: (messages) => set({ messages }),
+
+  addMessage: (message) => set((state) => ({
+    messages: [...state.messages, message]
   })),
 
-  setActiveChat: (chat) => set({ activeChat: chat, messages: [] }),
-  
-  setMessages: (messages) => set({ messages }),
-  
-  addMessage: (message) => set((state) => {
-    // Update chat list with latest message
-    const updatedChats = state.chats.map(c => 
-      c.id === message.chatId 
-        ? { ...c, messages: [message], updatedAt: message.createdAt }
-        : c
-    );
+  updateLatestMessage: (message) => set((state) => {
+    const chatIndex = state.chats.findIndex(c => c.id === message.chatId);
+    if (chatIndex === -1) return state;
+
+    const updatedChats = [...state.chats];
+    const chat = { ...updatedChats[chatIndex] };
     
-    // Add to current chat messages if active
-    if (state.activeChat?.id === message.chatId) {
-      return {
-        messages: [...state.messages, message],
-        chats: updatedChats
-      };
-    }
+    // Update the chat's last message info
+    // Assuming the Chat type has a 'messages' array for the last message preview
+    chat.messages = [message];
+    
+    // Move this chat to the top of the list
+    updatedChats.splice(chatIndex, 1);
+    updatedChats.unshift(chat);
     
     return { chats: updatedChats };
   }),
 
+  typingUsers: {},
   setTyping: (chatId, isTyping) => set((state) => ({
     typingUsers: { ...state.typingUsers, [chatId]: isTyping }
-  })),
-
-  setOnline: (userId, status) => set((state) => {
-    const newSet = new Set(state.onlineUsers);
-    if (status) newSet.add(userId);
-    else newSet.delete(userId);
-    return { onlineUsers: newSet };
-  }),
-
-  updateMessageStatus: (messageId, status) => set((state) => ({
-    messages: state.messages.map(m => 
-      m.id === messageId ? { ...m, status } : m
-    )
   }))
 }));
