@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 import { socket } from '@/lib/socket';
+import { Message } from '@/types'; // Import Message type
 
 export const useSocket = () => {
   const { user } = useAuthStore();
-  // Removed unused activeChat from destructuring
-  const { setMessages, setTyping, setChats, updateLatestMessage } = useChatStore();
+  // Use the new actions
+  const { addMessage, setTyping, updateLatestMessage } = useChatStore();
 
   useEffect(() => {
     if (!user) return;
@@ -17,14 +18,20 @@ export const useSocket = () => {
     // Listeners
     socket.on('connected', () => console.log('Socket connected'));
 
-    socket.on('message-received', (newMessage: any) => {
-      // Removed unused chatId variable
-      setMessages((prev) => [...prev, newMessage]);
+    socket.on('message-received', (newMessage: Message) => {
+      // Use getState to access current activeChat safely
+      const { activeChat, setMessages, messages } = useChatStore.getState();
+      
+      // If we are in the chat where the message belongs, add it to the view
+      if (activeChat && activeChat.id === newMessage.chatId) {
+        setMessages([...messages, newMessage]);
+      }
+      
+      // Always update the sidebar latest message
       updateLatestMessage(newMessage);
     });
 
-    socket.on('typing', ({ chatId /*, userId*/ }) => {
-      // Removed unused userId
+    socket.on('typing', ({ chatId }: { chatId: string }) => {
       setTyping(chatId, true);
     });
 
@@ -38,7 +45,7 @@ export const useSocket = () => {
       socket.off('typing');
       socket.off('stop-typing');
     };
-  }, [user, setMessages, setTyping, updateLatestMessage]);
+  }, [user, addMessage, setTyping, updateLatestMessage]);
 
   const joinChat = (chatId: string) => {
     socket.emit('join-chat', chatId);
