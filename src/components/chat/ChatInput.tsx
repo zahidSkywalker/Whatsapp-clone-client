@@ -5,6 +5,7 @@ import { useMediaRecorder } from '@/hooks/useMediaRecorder';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/api';
 import { queueMessage } from '@/lib/offline';
+import { cn } from '@/lib/utils'; // ADDED MISSING IMPORT
 
 // Icons
 const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404z" /></svg>;
@@ -20,9 +21,9 @@ const ChatInput: React.FC = () => {
   
   const { activeChat } = useChatStore();
   const { sendTyping } = useSocket();
-  const { isRecording, startRecording, stopRecording, audioBlob, cancelRecording } = useMediaRecorder();
+  // Removed unused 'cancelRecording'
+  const { isRecording, startRecording, stopRecording, audioBlob } = useMediaRecorder();
 
-  // Send voice note automatically when recording stops and blob is ready
   useEffect(() => {
     if (audioBlob && activeChat) {
       sendVoiceNote(audioBlob);
@@ -113,7 +114,6 @@ const ChatInput: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2 px-4 py-3 bg-whatsapp-dark-header border-t border-whatsapp-dark-divider">
-      {/* Emoji & Attachment */}
       <div className="flex items-center gap-2 text-whatsapp-dark-textSecondary">
         <button className="hover:text-whatsapp-dark-text transition-colors">
           <SmileIcon />
@@ -132,7 +132,6 @@ const ChatInput: React.FC = () => {
         />
       </div>
 
-      {/* Text Input */}
       <form onSubmit={handleSend} className="flex-1">
         <input
           type="text"
@@ -144,7 +143,6 @@ const ChatInput: React.FC = () => {
         />
       </form>
 
-      {/* Send / Mic Button */}
       <Button 
         variant="ghost" 
         size="icon" 
