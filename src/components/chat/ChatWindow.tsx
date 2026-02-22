@@ -2,17 +2,22 @@ import React, { useEffect, useRef } from 'react';
 import { useChatStore } from '@/store/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import { useSocket } from '@/hooks/useSocket';
+import { useReadMessages } from '@/hooks/useReadMessages';
 import Header from '../layout/Header';
 import ChatInput from './ChatInput';
 import MessageBubble from './MessageBubble';
+import TypingIndicator from './TypingIndicator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import api from '@/lib/api';
 
 const ChatWindow: React.FC = () => {
-  const { activeChat, messages, setMessages } = useChatStore();
+  const { activeChat, messages, setMessages, typingUsers } = useChatStore();
   const { user } = useAuthStore();
   const { joinChat } = useSocket();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Hook to mark messages as read
+  useReadMessages();
 
   // Fetch messages and join room when active chat changes
   useEffect(() => {
@@ -56,6 +61,8 @@ const ChatWindow: React.FC = () => {
     );
   }
 
+  const isTyping = typingUsers[activeChat.id];
+
   return (
     <div className="flex-1 flex flex-col h-screen bg-whatsapp-dark-bg">
       <Header />
@@ -69,6 +76,11 @@ const ChatWindow: React.FC = () => {
               isOwn={msg.senderId === user?.id} 
             />
           ))}
+          {isTyping && (
+            <div className="px-4 mt-1">
+              <TypingIndicator />
+            </div>
+          )}
         </div>
       </div>
       <ChatInput />
