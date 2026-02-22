@@ -1,6 +1,7 @@
 import React from 'react';
 import { Message } from '@/types';
 import { cn, formatTime } from '@/lib/utils';
+import VoiceNotePlayer from './VoiceNotePlayer';
 
 interface Props {
   message: Message;
@@ -23,8 +24,6 @@ const MessageBubble: React.FC<Props> = ({ message, isOwn }) => {
             : 'bg-whatsapp-dark-bubbleIn text-whatsapp-dark-text rounded-tl-none'
         )}
       >
-        {/* Sender Name (for groups) */}
-        {/* Content */}
         {message.type === 'text' && (
           <p className="text-sm leading-relaxed break-words">{message.content}</p>
         )}
@@ -33,6 +32,10 @@ const MessageBubble: React.FC<Props> = ({ message, isOwn }) => {
           <div className="mb-1 rounded-md overflow-hidden max-w-[240px]">
             <img src={message.mediaUrl} alt="image" className="w-full h-auto object-cover" />
           </div>
+        )}
+
+        {message.type === 'voice' && message.mediaUrl && (
+          <VoiceNotePlayer audioUrl={message.mediaUrl} isOwn={isOwn} />
         )}
 
         {message.type === 'file' && (
@@ -49,7 +52,7 @@ const MessageBubble: React.FC<Props> = ({ message, isOwn }) => {
           </div>
         )}
 
-        {/* Meta Info (Time + Status) */}
+        {/* Meta Info */}
         <div
           className={cn(
             'flex items-center justify-end gap-1 mt-0.5 float-right ml-2',
