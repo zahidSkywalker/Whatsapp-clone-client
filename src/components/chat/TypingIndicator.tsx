@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+// Removed unused import: import { cn } from '@/lib/utils';
 
 const TypingIndicator: React.FC = () => {
   return (
