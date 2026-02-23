@@ -27,21 +27,29 @@ const Sidebar: React.FC = () => {
     const fetchChats = async () => {
       try {
         const res = await api.get('/chat');
-        setChats(res.data);
+        // FIX: Validate that response is an array before setting state
+        if (Array.isArray(res.data)) {
+          setChats(res.data);
+        } else {
+          console.error('Invalid data format received for chats:', res.data);
+          setChats([]);
+        }
       } catch (error) {
         console.error('Failed to fetch chats', error);
+        setChats([]);
       }
     };
     fetchChats();
   }, []);
 
-  const filteredChats = (chats || []).filter((chat) => {
+  // FIX: Ensure chats is an array before filtering
+  const filteredChats = Array.isArray(chats) ? chats.filter((chat) => {
     if (chat.isGroup) {
       return chat.name?.toLowerCase().includes(searchQuery.toLowerCase());
     }
     const otherUser = getOtherMember(chat, user?.id || '');
     return otherUser?.username.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  }) : [];
 
   return (
     <>
