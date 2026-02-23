@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
     fetchChats();
   }, []);
 
-  const filteredChats = chats.filter((chat) => {
+  const filteredChats = (chats || []).filter((chat) => {
     if (chat.isGroup) {
       return chat.name?.toLowerCase().includes(searchQuery.toLowerCase());
     }
