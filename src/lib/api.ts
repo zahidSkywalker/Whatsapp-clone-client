@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_SERVER_URL}/api`,
+  baseURL: `https://what-sapp-clone-server.onrender.com/api`,
   headers: {
     'Content-Type': 'application/json',
   },
