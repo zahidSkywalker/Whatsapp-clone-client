@@ -54,10 +54,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
+        // FIX: Add a timeout to prevent infinite loading if API hangs
+        const timeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timed out')), 5000)
+        );
+
         try {
-          const res = await api.get('/auth/me');
+          // Race between the API call and the 5-second timeout
+          const res = await Promise.race([api.get('/auth/me'), timeout]) as any;
           set({ user: res.data, isAuthenticated: true, isLoading: false });
         } catch (error) {
+          console.warn('Auth check failed or timed out:', error);
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
